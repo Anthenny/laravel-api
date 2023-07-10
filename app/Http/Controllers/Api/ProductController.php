@@ -15,13 +15,59 @@ use Illuminate\Validation\Rule;
 class ProductController extends Controller {
 
     // Show all products
-    public function index(Request $request) {
-        // TODO laravel daily
-        $query = $request->query;
+    public function index( Request $request ) {
+        $query = $request->query();
+
+        if ( ! empty( $query['category'] ) ) {
+            $category_value = $query['category'];
+        } else {
+            $category_value = 'oorbellen';
+        }
+
+        // Default waardes
+        $orderBy_value               = 'created_at';
+        $orderBy_order               = 'asc';
+        $order_queries['created_at'] = 'asc';
+        $where_queries['reserved']   = true;
+        $where_queries['category']   = 'oorbellen';
+
+        if ( ! empty( $query['category'] ) ):
+            $where_queries['category'] = $query['category'];
+        endif;
+
+        if ( ! empty( $query['color'] ) ):
+            $where_queries['color'] = $query['color'];
+        endif;
+
+        // alleen 1 order querie in combinatie met 3 where queries
+        if ( ! empty( $query['weight'] ) ):
+            $orderBy_value           = 'weight';
+            $orderBy_order           = $query['weight'];
+            $order_queries['weight'] = $query['weight'];
+        endif;
+
+        if ( ! empty( $query['price'] ) ):
+            $orderBy_value          = 'price';
+            $orderBy_order          = $query['price'];
+            $order_queries['price'] = $query['price'];
+        endif;
+
+        if ( ! empty( $query['created_at'] ) ):
+            $orderBy_value               = 'created_at';
+            $orderBy_order               = $query['created_at'];
+            $order_queries['created_at'] = $query['created_at'];
+        endif;
 
         $products = DB::table( 'products' )
-                      ->where( 'reserved', 1 )
-                      ->paginate( 2 );
+                      ->where(
+                          function ( $q ) use ( $where_queries ) {
+                              foreach ( $where_queries as $key => $value ) {
+                                  $q->where( $key, '=', $value );
+                              }
+                          }
+                      )
+                      ->orderBy( $orderBy_value, $orderBy_order )
+                      ->paginate( 10 );
 
         if ( $products->isEmpty() ) {
             return response( [ 'products' => ProductResource::collection( $products ), 'message' => 'Er zijn helaas nog geen producten' ] );
@@ -37,6 +83,7 @@ class ProductController extends Controller {
         $validator = Validator::make( $data, [
             'title'       => [ 'required', 'string', 'max:30', Rule::unique( 'products' ) ],
             'slug'        => [ 'required', 'string' ],
+            'color'       => [ 'required', 'string' ],
             'thumbnail'   => [ 'required', 'string' ],
             'category'    => [ 'required', 'string' ],
             'price'       => [ 'required', 'numeric' ],

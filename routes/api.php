@@ -6,6 +6,8 @@ use Illuminate\Support\Facades\Route;
 // Controllers
 use \App\Http\Controllers\Api\AuthController;
 use \App\Http\Controllers\Api\ProductController;
+use \App\Http\Controllers\Api\OrderController;
+use \App\Http\Controllers\Api\UserController;
 
 Route::group([
     'middleware' => 'api',
@@ -18,4 +20,31 @@ Route::group([
     Route::get('/user-profile', [AuthController::class, 'userProfile']);
 });
 
-Route::apiResource('products',\App\Http\Controllers\Api\ProductController::class);
+// Routes die toegankelijk zijn voor iedereen
+Route::get('/products/{product}', [ProductController::class, 'show']);
+Route::get('/products', [ProductController::class, 'index']);
+
+// Routes die toegankelijk zijn voor normale gebruikers, dashboard, orders
+Route::middleware(['auth'])->group(function () {
+    Route::post('/orders', [OrderController::class, 'store']);
+    Route::get('/user/orders/{email}', [OrderController::class, 'showUserOrders']);
+});
+
+// Routes die alleen toegankelijk zijn voor admin dashboard, producten cud, order cud
+Route::middleware(['auth', 'is_admin'])->group(function () {
+    // Products
+    Route::post('/dashboard/products', [ProductController::class, 'store']);
+    Route::patch('/dashboard/products/{product}', [ProductController::class, 'update']);
+    Route::delete('/dashboard/products/{product}', [ProductController::class, 'destroy']);
+
+    // Users
+    Route::delete('/dashboard/users/{user}', [UserController::class, 'destroy']);
+    Route::patch('/dashboard/users/{user}', [UserController::class, 'update']);
+    Route::get('/dashboard/users/{user}', [UserController::class, 'show']);
+    Route::get('/dashboard/users', [UserController::class, 'index']);
+
+    // Orders
+    Route::get('/orders/{order}', [OrderController::class, 'show']);
+    Route::get('/orders', [OrderController::class, 'index']);
+    Route::patch('/orders/{order}', [OrderController::class, 'update']);
+});

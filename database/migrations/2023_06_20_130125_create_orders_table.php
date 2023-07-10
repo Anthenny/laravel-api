@@ -13,9 +13,16 @@ return new class extends Migration
     {
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('first_name');
+            $table->string('last_name');
+            $table->string('email');
+            $table->string('phone_number');
+            $table->string('house_number');
+            $table->string('additions');
+            $table->string('postal_code');
             $table->integer('amount');
             $table->boolean('completed');
-            $table->foreignId(\App\Models\User::class, 'user_id');
+            $table->json('products');
             $table->timestamps();
         });
     }

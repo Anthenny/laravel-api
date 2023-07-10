@@ -11,7 +11,6 @@ use Tymon\JWTAuth\Contracts\JWTSubject;
 
 class User extends Authenticatable implements JWTSubject
 
-
 {
     use HasApiTokens, HasFactory, Notifiable;
 
@@ -21,9 +20,15 @@ class User extends Authenticatable implements JWTSubject
      * @var array<int, string>
      */
     protected $fillable = [
-        'name',
+        'first_name',
+        'last_name',
         'email',
+        'phone_number',
+        'house_number',
+        'additions',
+        'postal_code',
         'password',
+        'is_admin'
     ];
 
     /**
@@ -33,6 +38,7 @@ class User extends Authenticatable implements JWTSubject
      */
     protected $hidden = [
         'password',
+        'is_admin',
         'remember_token',
     ];
 

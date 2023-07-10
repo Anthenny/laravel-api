@@ -12,21 +12,22 @@ class Order extends Model
     use HasFactory;
 
     protected $fillable = [
+        'first_name',
+        'last_name',
+        'email',
+        'phone_number',
+        'house_number',
+        'additions',
+        'postal_code',
         'amount',
         'completed',
-        'user_id'
+        'products', // mis deze weghalen todo
     ];
 
     /**
-     * @return BelongsTo
+     * @var array
      */
-    public function user():BelongsTo
-    {
-        return $this->belongsTo(User::class);
-    }
-
-    public function products():BelongsToMany
-    {
-        return $this->belongsToMany(Product::class);
-    }
+    protected $casts = [
+      'products' => 'array'
+    ];
 }
