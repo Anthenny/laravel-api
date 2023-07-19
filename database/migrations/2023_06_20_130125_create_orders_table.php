@@ -20,12 +20,15 @@ return new class extends Migration
             $table->string('house_number');
             $table->string('additions');
             $table->string('postal_code');
-            $table->integer('amount');
+            $table->decimal('total_price', 6, 2);
             $table->boolean('completed');
+            $table->string('session_id');
             $table->json('products');
             $table->timestamps();
         });
     }
+
+    // TODO KOPPEL USER ID AAN ORDER
 
     /**
      * Reverse the migrations.

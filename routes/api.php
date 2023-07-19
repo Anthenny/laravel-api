@@ -23,6 +23,9 @@ Route::group([
 // Routes die toegankelijk zijn voor iedereen
 Route::get('/products/{product}', [ProductController::class, 'show']);
 Route::get('/products', [ProductController::class, 'index']);
+Route::post('/checkout/sessions', [ProductController::class, 'checkout']);
+Route::get('/checkout/success', [ProductController::class, 'success']);
+Route::get('/checkout/cancel', [ProductController::class, 'cancel']);
 
 // Routes die toegankelijk zijn voor normale gebruikers, dashboard, orders
 Route::middleware(['auth'])->group(function () {

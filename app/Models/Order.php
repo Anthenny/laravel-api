@@ -19,8 +19,9 @@ class Order extends Model
         'house_number',
         'additions',
         'postal_code',
-        'amount',
+        'total_price',
         'completed',
+        'session_id',
         'products', // mis deze weghalen todo
     ];
 

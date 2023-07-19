@@ -5,12 +5,14 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\StoreProductRequest;
 use App\Http\Resources\ProductResource;
+use App\Models\Order;
 use App\Models\Product;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ProductController extends Controller {
 
@@ -28,7 +30,7 @@ class ProductController extends Controller {
         $orderBy_value               = 'created_at';
         $orderBy_order               = 'asc';
         $order_queries['created_at'] = 'asc';
-        $where_queries['reserved']   = true;
+        $where_queries['reserved']   = false;
         $where_queries['category']   = 'oorbellen';
 
         if ( ! empty( $query['category'] ) ):
@@ -155,5 +157,65 @@ class ProductController extends Controller {
         $product->delete();
 
         return response( null, 204 );
+    }
+
+    public function checkout() {
+        \Stripe\Stripe::setApiKey(env( 'STRIPE_SECRET' ));
+
+        $products = Product::all();
+        // TODO ipv alle producten loopen we door cart
+        // TODO user object meegeven zodat die firstname etc ook dynamisch is
+        $lineItems  = [];
+        $totalPrice = 0;
+
+        foreach ( $products as $product ) {
+            $totalPrice  += $product->price;
+            $lineItems[] = [
+                'price_data' => [
+                    'currency'     => 'eur',
+                    'product_data' => [
+                        'name' => $product->title,
+                    ],
+                    'unit_amount'  => $product->price * 100,
+                ],
+                'quantity'   => 1,
+            ];
+        }
+
+        $YOUR_DOMAIN = 'http://localhost/api/checkout';
+
+        $checkout_session = \Stripe\Checkout\Session::create([
+            'line_items' => $lineItems,
+            'payment_method_types' => [ 'card', 'ideal' ],
+            'mode' => 'payment',
+            'success_url' => $YOUR_DOMAIN . '/success',
+            'cancel_url' => $YOUR_DOMAIN . '/cancel',
+        ]);
+
+        $order = new Order();
+        // todo enum values production
+        $order->first_name   = 'Anthenny';
+        $order->last_name    = 'de Hoon';
+        $order->email        = 'A@hotmail.com';
+        $order->phone_number = '0636082244';
+        $order->house_number = '19';
+        $order->additions    = 'C';
+        $order->postal_code  = '2924BN';
+        $order->total_price  = $totalPrice;
+        $order->completed    = false;
+        $order->session_id   = 'test';
+        $order->products     = $products;
+
+        $order->save();
+
+        return response( [ 'message' => 'succesvol de order geplaatst', 'url' => $checkout_session->url] );
+    }
+
+    public function success() {
+        return response( [ 'message' => 'succesvol de order geplaatst']);
+    }
+
+    public function cancel() {
+        return response( [ 'message' => 'canceled']);
     }
 }

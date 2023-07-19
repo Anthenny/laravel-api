@@ -18,8 +18,8 @@ return new class extends Migration
             $table->string('color', 2048);
             $table->string('thumbnail', 2048);
             $table->string('category', 2048);
-            $table->integer('price');
-            $table->integer('amount');
+            $table->decimal('price', 6, 2);
+            $table->integer('quantity');
             $table->boolean('reserved');
             $table->integer('weight');
             $table->string('description');
