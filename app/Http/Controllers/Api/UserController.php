@@ -73,5 +73,6 @@ class UserController extends Controller
         $user->delete();
 
         return response(null, 204);
+//        TODO alles updaten
     }
 }
